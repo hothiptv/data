@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Màn hình hiển thị kết quả</title>
+    <style>
+        body { margin: 0; padding: 0; font-family: sans-serif; display: flex; flex-direction: column; height: 100vh; background: #f0f2f5; }
+        #header { background: #333; color: white; padding: 10px; font-size: 18px; text-align: center; font-weight: bold; }
+        #status { color: #ffc107; font-size: 14px; font-weight: normal; }
+        iframe { flex: 1; width: 100%; border: none; background: white; }
+    </style>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+
+    <div id="header">
+        Tên màn hình chạy: <span id="roomName" style="color: #00ff00;">Đang tạo...</span>
+        <div id="status">Chờ máy khác kết nối và nhấn Run...</div>
+    </div>
+
+    <iframe id="outputFrame"></iframe>
+
+    <script>
+        const socket = io();
+        const roomNameSpan = document.getElementById('roomName');
+        const statusDiv = document.getElementById('status');
+        const outputFrame = document.getElementById('outputFrame');
+
+        // 1. Tạo tên ngẫu nhiên cho màn hình này
+        const randomId = Math.floor(1000 + Math.random() * 9000);
+        const myRoomName = `MayChay-${randomId}`;
+        roomNameSpan.innerText = myRoomName;
+
+        // 2. Tham gia vào phòng socket bằng tên này
+        socket.emit('join-room', myRoomName);
+
+        // 3. Lắng nghe sự kiện cập nhật code từ server
+        socket.on('update-code', (htmlCode) => {
+            statusDiv.innerText = "Đã kết nối - Cập nhật tự động thành công!";
+            statusDiv.style.color = "#28a745";
+            
+            // Đưa code HTML vào iframe để chạy ổn định
+            const doc = outputFrame.contentDocument || outputFrame.contentWindow.document;
+            doc.open();
+            doc.write(htmlCode);
+            doc.close();
+        });
+    </script>
+</body>
+</html>
